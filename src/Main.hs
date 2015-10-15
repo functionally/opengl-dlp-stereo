@@ -69,19 +69,17 @@ display leftFrame =
   do
     leftFrame' <- get leftFrame
     let
+      vertex3f :: (GLfloat, GLfloat, GLfloat) -> IO ()
+      vertex3f (x, y, z) = vertex $ Vertex3 x y z
       offset = if leftFrame' then -0.05 else 0.05
     clear [ColorBuffer, DepthBuffer]
     renderPrimitive Quads
-      $ sequence_
+      $ mapM_ vertex3f
       [
-        vertex3f (offset - 0.5, -0.5, 0.5)
-      , vertex3f (offset - 0.5,  0.5, 0.5)
-      , vertex3f (offset + 0.5,  0.5, 0.5)
-      , vertex3f (offset + 0.5, -0.5, 0.5)
+        (offset - 0.5, -0.5, 0.5)
+      , (offset - 0.5,  0.5, 0.5)
+      , (offset + 0.5,  0.5, 0.5)
+      , (offset + 0.5, -0.5, 0.5)
       ]
     drawDLP leftFrame
     swapBuffers
-
-
-vertex3f :: (GLfloat, GLfloat, GLfloat) -> IO ()
-vertex3f (x, y, z) = vertex $ Vertex3 x y z
