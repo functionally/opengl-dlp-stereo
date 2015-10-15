@@ -1,5 +1,5 @@
 name:                opengl-dlp-stereo
-version:             0.1.0.0
+version:             0.1.0.1
 -- synopsis:            
 -- description:         
 license:             MIT
@@ -14,7 +14,7 @@ cabal-version:       >=1.10
 
 executable handa-parplanes
   main-is:             Main.hs
-  -- other-modules:       
+  other-modules:       Graphics.Rendering.DLP
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.7
                ,       GLUT
