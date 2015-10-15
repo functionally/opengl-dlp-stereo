@@ -2,7 +2,7 @@
 
 
 module Graphics.Rendering.DLP (
-  DlpEncoding(SideBySide, FrameSequential, TopAndBottom)
+  DlpEncoding(SideBySide, FrameSequential, TopAndBottom, LeftOnly)
 , DlpState
 , initDlp
 , DlpEye(..)
@@ -27,7 +27,7 @@ import qualified Data.Vector.Storable as V (fromList, unsafeWith)
 -- Implementation based on <http://git.savannah.gnu.org/cgit/bino.git/tree/src/video_output.cpp?id=bino-1.6.1#n1389>.
 
 
-data DlpEncoding = SideBySide | FrameSequential | TopAndBottom | Experimental
+data DlpEncoding = SideBySide | FrameSequential | TopAndBottom | LeftOnly | Experimental
   deriving (Eq, Read, Show)
 
 
@@ -44,8 +44,10 @@ initDlp = newIORef 0
 
 
 showEye :: DlpEye -> DlpEncoding -> DlpState -> Bool
-showEye LeftDlp  Experimental         = (== 0) . (`mod` 2)
-showEye RightDlp Experimental         = (/= 0) . (`mod` 2)
+showEye LeftDlp  Experimental    = (== 0) . (`mod` 2)
+showEye RightDlp Experimental    = (/= 0) . (`mod` 2)
+showEye LeftDlp  LeftOnly        = const True
+showEye RightDlp LeftOnly        = const False
 showEye LeftDlp  FrameSequential = (== 0) . (`mod` 2)
 showEye RightDlp FrameSequential = (/= 0) . (`mod` 2)
 showEye _        _               = const True
@@ -80,6 +82,7 @@ dlpColor' encoding = (dlpColor encoding <$>) . get
 
 
 drawDlp :: DlpEncoding -> IORef DlpState -> IO ()
+drawDlp LeftOnly _     = return ()
 drawDlp encoding state =
   do
     (Position x0 y0, Size w h) <- get viewport

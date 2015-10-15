@@ -12,13 +12,16 @@ import Graphics.UI.GLUT
 main :: IO ()
 main =
   do
+    putStrLn "DLP Stereo OpenGL Example:"
+    putStrLn "    Use the --fullscreen flag to run in full screen mode."
+    putStrLn "    Use the --mono flag to run in monoscopic mode instead of in stereo mode."
     (_, arguments) <- getArgsAndInitialize
     initialDisplayMode $= [WithDepthBuffer, DoubleBuffered]
     _window <- createWindow "DLP Stereo OpenGL Example"
     when ("--fullscreen" `elem` arguments) fullScreen
     dlp <- initDlp
     angle <- newIORef 0
-    displayCallback $= display dlp angle
+    displayCallback $= display ("--mono" `notElem` arguments) dlp angle
     idleCallback $= Just (idle angle)
     depthFunc $= Just Less 
     mainLoop
@@ -31,10 +34,12 @@ idle angle =
     postRedisplay Nothing
 
 
-display :: IORef DlpState -> IORef GLfloat -> DisplayCallback
-display dlp angle =
+display :: Bool -> IORef DlpState -> IORef GLfloat -> DisplayCallback
+display stereo dlp angle =
   do
-    leftFrame <- showEye' LeftDlp FrameSequential dlp
+    let
+      encoding = if stereo then FrameSequential else LeftOnly
+    leftFrame <- showEye' LeftDlp encoding dlp
     angle' <- get angle
     let
       offset :: GLfloat
@@ -55,7 +60,7 @@ display dlp angle =
       cube 0.25
       color $ Color3 1 0.65 (0.5 :: GLfloat)
       cubeFrame 0.25
-    drawDlp FrameSequential dlp
+    drawDlp encoding dlp
     swapBuffers
 
 
