@@ -1,7 +1,9 @@
 Functions for using DLP stereo with 3-D Ready Sync projectors and OpenGL
 ========================================================================
 
-This Haskell package uses the specification <<http://lists.gnu.org/archive/html/bino-list/2013-03/pdfz6rW7jUrgI.pdf>> and is based on the implementation for the stereo movie viewer Bino <<http://git.savannah.gnu.org/cgit/bino.git/tree/src/video_output.cpp?id=bino-1.6.1#n1389>>.  In particular, note that this technique does not require a graphics card that supports @GL_STEREO@.
+This Haskell package contains functions for rendering 3D stereo using DLP 3-D Ready Sync projectors and active-shutter stereo glasses.  It also includes a sample application and notes regarding hardware setup for DLP.  In particular, note that this technique does not require a graphics card that supports `GL_STEREO`.
+
+The code conforms to the specification <<http://lists.gnu.org/archive/html/bino-list/2013-03/pdfz6rW7jUrgI.pdf>> and is based on the implementation for the stereo movie viewer Bino <<http://git.savannah.gnu.org/cgit/bino.git/tree/src/video_output.cpp?id=bino-1.6.1#n1389>>.
 
 
 Skeletal example illustrating the use of frame-sequential DLP
