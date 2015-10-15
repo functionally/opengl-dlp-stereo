@@ -75,6 +75,7 @@ dlpColor Experimental    state = if state `mod` 2 == 0 then red   else cyan
 dlpColor SideBySide      state = if state `mod` 2 == 0 then red   else cyan
 dlpColor FrameSequential state = if state `mod` 4 <  2 then green else magenta
 dlpColor TopAndBottom    state = if state `mod` 2 == 0 then blue  else yellow
+dlpColor _               _     = undefined
 
 
 dlpColor' :: DlpEncoding -> IORef DlpState -> IO Word32

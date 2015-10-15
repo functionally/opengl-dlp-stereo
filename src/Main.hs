@@ -14,10 +14,10 @@ main =
   do
     putStrLn "DLP Stereo OpenGL Example:"
     putStrLn "    Use the --fullscreen flag to run in full screen mode."
-    putStrLn "    Use the --mono flag to run in monoscopic mode instead of in stereo mode."
+    putStrLn "    Use the --mono flag to run in monoscopic mode."
     (_, arguments) <- getArgsAndInitialize
     initialDisplayMode $= [WithDepthBuffer, DoubleBuffered]
-    _window <- createWindow "DLP Stereo OpenGL Example"
+    _ <- createWindow "DLP Stereo OpenGL Example"
     when ("--fullscreen" `elem` arguments) fullScreen
     dlp <- initDlp
     angle <- newIORef 0
