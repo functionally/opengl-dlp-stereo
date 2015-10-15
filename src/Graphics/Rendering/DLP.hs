@@ -17,7 +17,7 @@ import Control.Monad (when)
 import Data.Bits ((.|.))
 import Data.IORef (IORef, newIORef)
 import Data.Word (Word32)
-import Graphics.Rendering.OpenGL.GL
+import Graphics.Rendering.OpenGL.GL (DataType(UnsignedInt8888Rev), PixelData(..), PixelFormat(BGRA), Position(..), Size(..), Vertex2(..), ($~!), drawPixels, get, viewport, windowPos)
 
 import qualified Data.Vector.Storable as V (fromList, unsafeWith)
 

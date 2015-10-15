@@ -6,7 +6,8 @@ module Main (
 import Control.Monad (when)
 import Data.IORef (IORef, newIORef)
 import Graphics.Rendering.DLP (DlpEncoding(..), DlpEye(..), DlpState, drawDlp, initDlp, showEye')
-import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL.GL (ClearBuffer(..), Color3(..), ComparisonFunction(Less), PrimitiveMode(..), Vector3(..), Vertex3(..), GLfloat, ($=), ($~!), clear, color, get, loadIdentity, preservingMatrix, renderPrimitive, rotate, translate, vertex)
+import Graphics.UI.GLUT (DisplayCallback, DisplayMode(..), IdleCallback, createWindow, depthFunc, displayCallback, fullScreen, getArgsAndInitialize, idleCallback, initialDisplayMode, mainLoop, postRedisplay, swapBuffers)
 
 
 main :: IO ()
