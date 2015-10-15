@@ -2,7 +2,7 @@
 
 
 module Graphics.Rendering.DLP (
-  DlpEncoding(SideBySide, FrameSequential, TopAndBottom, LeftOnly)
+  DlpEncoding(..)
 , DlpState
 , initDlp
 , DlpEye(..)
@@ -27,7 +27,7 @@ import qualified Data.Vector.Storable as V (fromList, unsafeWith)
 -- Implementation based on <http://git.savannah.gnu.org/cgit/bino.git/tree/src/video_output.cpp?id=bino-1.6.1#n1389>.
 
 
-data DlpEncoding = SideBySide | FrameSequential | TopAndBottom | LeftOnly | Experimental
+data DlpEncoding = SideBySide | FrameSequential | TopAndBottom | LeftOnly
   deriving (Eq, Read, Show)
 
 
@@ -44,8 +44,6 @@ initDlp = newIORef 0
 
 
 showEye :: DlpEye -> DlpEncoding -> DlpState -> Bool
-showEye LeftDlp  Experimental    = (== 0) . (`mod` 2)
-showEye RightDlp Experimental    = (/= 0) . (`mod` 2)
 showEye LeftDlp  LeftOnly        = const True
 showEye RightDlp LeftOnly        = const False
 showEye LeftDlp  FrameSequential = (== 0) . (`mod` 2)
@@ -71,11 +69,10 @@ yellow  = red   .|. green
 
 
 dlpColor :: DlpEncoding -> DlpState -> Word32
-dlpColor Experimental    state = if state `mod` 2 == 0 then red   else cyan
 dlpColor SideBySide      state = if state `mod` 2 == 0 then red   else cyan
 dlpColor FrameSequential state = if state `mod` 4 <  2 then green else magenta
 dlpColor TopAndBottom    state = if state `mod` 2 == 0 then blue  else yellow
-dlpColor _               _     = undefined
+dlpColor LeftOnly        _     = undefined
 
 
 dlpColor' :: DlpEncoding -> IORef DlpState -> IO Word32
