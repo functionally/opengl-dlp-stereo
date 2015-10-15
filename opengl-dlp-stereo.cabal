@@ -24,7 +24,7 @@ source-repository head
  
 library
   exposed-modules:  Graphics.Rendering.DLP
-  build-depends:    base   >=  4.6
+  build-depends:    base   >=  4.6 && < 5
                ,    OpenGL >=  2.8
                ,    vector >= 0.10
   hs-source-dirs:   src
@@ -32,7 +32,7 @@ library
 
 executable opengl-dlp-test
   main-is:          Main.hs
-  build-depends:    base   >=  4.6
+  build-depends:    base   >=  4.6 && < 5
                ,    GLUT   >=  2.4
                ,    OpenGL >=  2.8
                ,    vector >= 0.10
