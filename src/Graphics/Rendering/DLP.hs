@@ -1,3 +1,6 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
+
 module Graphics.Rendering.DLP (
   DlpEncoding(SideBySide, FrameSequential, TopAndBottom)
 , DlpState
@@ -39,7 +42,8 @@ data DlpEye = LeftDlp | RightDlp
   deriving (Eq, Read, Show)
 
 
-type DlpState = Int
+newtype DlpState = DlpState Int
+  deriving (Enum, Eq, Integral, Num, Ord, Real)
 
 
 initDlp :: IO (IORef DlpState)
