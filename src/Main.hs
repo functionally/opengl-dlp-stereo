@@ -6,20 +6,7 @@ module Main (
 import Control.Monad (when)
 import Data.IORef (IORef, newIORef)
 import Graphics.Rendering.DLP (DlpEncoding(..), DlpEye(..), DlpState, drawDlp, initDlp, showEye')
-import Graphics.Rendering.OpenGL.GL (GLfloat)
-import Graphics.Rendering.OpenGL.GL.BeginEnd (PrimitiveMode(Lines, Quads), renderPrimitive)
-import Graphics.Rendering.OpenGL.GL.CoordTrans (loadIdentity, preservingMatrix, rotate, translate)
-import Graphics.Rendering.OpenGL.GL.Framebuffer (ClearBuffer(..), clear)
-import Graphics.Rendering.OpenGL.GL.PerFragment (ComparisonFunction(Less), depthFunc)
-import Graphics.Rendering.OpenGL.GL.StateVar (($=), ($~!), get)
-import Graphics.Rendering.OpenGL.GL.Tensor (Vector3(..), Vertex3(..))
-import Graphics.Rendering.OpenGL.GL.VertexAttributes (Color3(..))
-import Graphics.Rendering.OpenGL.GL.VertexSpec (color, vertex)
-import Graphics.UI.GLUT.Begin (mainLoop)
-import Graphics.UI.GLUT.Callbacks.Global (IdleCallback, idleCallback)
-import Graphics.UI.GLUT.Callbacks.Window (DisplayCallback, displayCallback)
-import Graphics.UI.GLUT.Initialization (DisplayMode(..), getArgsAndInitialize, initialDisplayMode)
-import Graphics.UI.GLUT.Window (createWindow, fullScreen, postRedisplay, swapBuffers)
+import Graphics.UI.GLUT
 
 
 main :: IO ()

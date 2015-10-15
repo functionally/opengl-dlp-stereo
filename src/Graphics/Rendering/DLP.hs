@@ -17,14 +17,7 @@ import Control.Monad (when)
 import Data.Bits ((.|.))
 import Data.IORef (IORef, newIORef)
 import Data.Word (Word32)
-import Graphics.Rendering.OpenGL.GL.CoordTrans (Position(..), Size(..), viewport)
-import Graphics.Rendering.OpenGL.GL.DataType (DataType(UnsignedInt8888Rev))
-import Graphics.Rendering.OpenGL.GL.PixelData (PixelData(..))
-import Graphics.Rendering.OpenGL.GL.PixelFormat (PixelFormat(BGRA))
-import Graphics.Rendering.OpenGL.GL.PixelRectangles.Rasterization (drawPixels)
-import Graphics.Rendering.OpenGL.GL.RasterPos (windowPos)
-import Graphics.Rendering.OpenGL.GL.StateVar (($~!), get)
-import Graphics.Rendering.OpenGL.GL.Tensor (Vertex2(..))
+import Graphics.Rendering.OpenGL.GL
 
 import qualified Data.Vector.Storable as V (fromList, unsafeWith)
 
