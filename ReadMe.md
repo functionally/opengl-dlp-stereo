@@ -5,6 +5,8 @@ This Haskell package contains functions for rendering 3D stereo using DLP 3-D Re
 
 The code conforms to the specification <<http://lists.gnu.org/archive/html/bino-list/2013-03/pdfz6rW7jUrgI.pdf>> and is based on the implementation for the stereo movie viewer Bino <<http://git.savannah.gnu.org/cgit/bino.git/tree/src/video_output.cpp?id=bino-1.6.1#n1389>>.
 
+Please report issues at <<https://bwbush.atlassian.net/projects/HOGLDLP/issues/>>.
+
 
 Skeletal example illustrating the use of frame-sequential DLP
 -------------------------------------------------------------
