@@ -17,21 +17,18 @@ main = do
   initialDisplayMode $= [WithDepthBuffer, DoubleBuffered]
   _ <- createWindow \"DLP Stereo OpenGL Example\"
   depthFunc $= Just Less 
-  dlp <- initDlp                                                         -- Initialize the DLP state.
+  dlp <- initDlp FrameSequential                                         -- Initialize the DLP state.
   displayCallback $= display dlp                                         -- The display callback needs the DLP state.
   idleCallback $= Just (postRedisplay Nothing)                           -- The idle callback must force redisplay for frame-sequential encoding.
   mainLoop
 
-encoding :: DlpEncoding
-encoding = FrameSequential                                               -- Frame-sequential encoding is usually easiest to code.
-
 display :: IORef DlpState -> DisplayCallback
 display dlp = do
   clear [ColorBuffer, DepthBuffer]
-  isLeftEye <- showEye' LeftDlp encoding dlp                             -- Determine whether to draw the view for the left or right eye.
+  isLeftEye <- showEye' LeftDlp dlp                                      -- Determine whether to draw the view for the left or right eye.
   translate $ Vector3 (if isLeftEye then -0.05 else 0.05 :: GLfloat) 0 0 -- Shift the view slightly, depending on for which eye to draw.
   renderPrimitive . . .                                                  -- All of the rendering actions go here.
-  drawDlp encoding dlp                                                   -- Draw the colored DLP reference line just before swapping framebuffers.
+  drawDlp dlp                                                            -- Draw the colored DLP reference line just before swapping framebuffers.
   swapBuffers
 @
 
@@ -67,7 +64,7 @@ module Graphics.Rendering.DLP (
 
 
 import Control.Applicative ((<$>))
-import Control.Monad (when)
+import Control.Monad (unless, when)
 import Data.Bits ((.|.))
 import Data.IORef (IORef, newIORef)
 import Data.Word (Word32)
@@ -94,38 +91,37 @@ data DlpEye =
 
 
 -- | The DLP state, which tracks the sequence of frames.
-newtype DlpState = DlpState {unDlpState :: Int}
+data DlpState = DlpState DlpEncoding Int
 
 
 -- | Initialize the DLP state.
-initDlp :: IO (IORef DlpState)
-initDlp = newIORef $ DlpState 0
+initDlp :: DlpEncoding -> IO (IORef DlpState)
+initDlp encoding = newIORef $ DlpState encoding 0
 
 
 -- | Query whether to show the view from the specified eye for the current frame.  Client code should call this function to determine which views to draw into the framebuffer.
 showEye :: DlpEye      -- ^ The eye in question.
-        -> DlpEncoding -- ^ The DLP encoding.
         -> DlpState    -- ^ The current DLP state.
         -> Bool        -- ^ Whether the view of the specified eye should be shown for the current frame.
-showEye LeftDlp  FrameSequential = (== 0) . (`mod` 2) . unDlpState
-showEye RightDlp FrameSequential = (/= 0) . (`mod` 2) . unDlpState
-showEye RightDlp LeftOnly        = const False
-showEye LeftDlp  RightOnly       = const False
-showEye _        _               = const True
+showEye LeftDlp  (DlpState FrameSequential frame) = frame `mod` 2 == 0
+showEye RightDlp (DlpState FrameSequential frame) = frame `mod` 2 /= 0
+showEye RightDlp (DlpState LeftOnly        _    ) = False
+showEye LeftDlp  (DlpState RightOnly       _    ) = False
+showEye _        _                                = True
 
 
 -- | Query whether to show the view from the specified eye for the current frame.  Client code should call this function to determine which views to draw into the framebuffer.
 showEye' :: DlpEye         -- ^ The eye in question.
-         -> DlpEncoding    -- ^ The DLP encoding.
          -> IORef DlpState -- ^ A reference to the current DLP state.
          -> IO Bool        -- ^ An action for determining whether the view of the specified eye should be shown for the current frame.
-showEye' eye encoding = (showEye eye encoding <$>) . get
+showEye' eye = (showEye eye <$>) . get
 
 
 -- | Advance the DLP state one frame.
 advanceDlp :: IORef DlpState -- ^ A reference to the current DLP state.
            -> IO ()          -- ^ An action to advance the DLP state to the next frame.
-advanceDlp = ($~! (DlpState . (`mod` 4) . (+ 1) . unDlpState))
+advanceDlp dlp =
+  dlp $~! \(DlpState encoding frame) -> DlpState encoding $ (frame + 1) `mod` 4
 
 
 -- | Color constants.
@@ -139,35 +135,34 @@ yellow  = red   .|. green
 
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
-dlpColor :: DlpEncoding -> DlpState -> Word32
-dlpColor SideBySide      (DlpState state) = if state `mod` 2 == 0 then red   else cyan
-dlpColor FrameSequential (DlpState state) = if state `mod` 4 <  2 then green else magenta
-dlpColor TopAndBottom    (DlpState state) = if state `mod` 2 == 0 then blue  else yellow
-dlpColor LeftOnly        _                = undefined -- Safe because drawDlp never calls the function for this DLP mode.
-dlpColor RightOnly       _                = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
+dlpColor :: DlpState -> Word32
+dlpColor (DlpState SideBySide      frame) = if frame `mod` 2 == 0 then red   else cyan
+dlpColor (DlpState FrameSequential frame) = if frame `mod` 4 <  2 then green else magenta
+dlpColor (DlpState TopAndBottom    frame) = if frame `mod` 2 == 0 then blue  else yellow
+dlpColor (DlpState LeftOnly        _    ) = undefined -- Safe because drawDlp never calls the function for this DLP mode.
+dlpColor (DlpState RightOnly       _    ) = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
 
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
-dlpColor' :: DlpEncoding -> IORef DlpState -> IO Word32
-dlpColor' encoding = (dlpColor encoding <$>) . get
+dlpColor' :: IORef DlpState -> IO Word32
+dlpColor' = (dlpColor <$>) . get
 
 
 -- | Draw the DLP reference line.  This action should be executed after all other drawing is complete, just before buffers are swapped.
-drawDlp :: DlpEncoding    -- ^ The DLP encoding.
-        -> IORef DlpState -- ^ A reference to the current DLP state.
+drawDlp :: IORef DlpState -- ^ A reference to the current DLP state.
         -> IO ()          -- ^ An action to draw the DLP reference line.
-drawDlp LeftOnly  _     = return ()
-drawDlp RightOnly _     = return ()
-drawDlp encoding  state =
+drawDlp dlp =
   do
-    (Position x0 y0, Size w h) <- get viewport
-    color <- dlpColor' encoding state
-    let
-      pixels = V.fromList $ replicate (fromIntegral w) color
-      drawLine = V.unsafeWith pixels $ drawPixels (Size w 1) . PixelData BGRA UnsignedInt8888Rev
-    windowPos $ Vertex2 x0 y0
-    drawLine
-    when (encoding == TopAndBottom) $ do
-      windowPos $ Vertex2 x0 $ y0 + h `div` 2
+    DlpState encoding _ <- get dlp
+    unless (encoding `elem` [LeftOnly, RightOnly]) $ do
+      (Position x0 y0, Size w h) <- get viewport
+      color <- dlpColor' dlp
+      let
+        pixels = V.fromList $ replicate (fromIntegral w) color
+        drawLine = V.unsafeWith pixels $ drawPixels (Size w 1) . PixelData BGRA UnsignedInt8888Rev
+      windowPos $ Vertex2 x0 y0
       drawLine
-    advanceDlp state
+      when (encoding == TopAndBottom) $ do
+        windowPos $ Vertex2 x0 $ y0 + h `div` 2
+        drawLine
+    advanceDlp dlp

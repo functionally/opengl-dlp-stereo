@@ -35,7 +35,7 @@ main =
     _ <- createWindow "DLP Stereo OpenGL Example"
     depthFunc $= Just Less 
     when ("--fullscreen" `elem` arguments) fullScreen
-    dlp <- initDlp
+    dlp <- initDlp FrameSequential
     angle <- newIORef 0
     displayCallback $= display ("--mono" `notElem` arguments) dlp angle
     idleCallback $= Just (idle angle)
@@ -55,10 +55,8 @@ idle angle =
 display :: Bool -> IORef DlpState -> IORef GLfloat -> DisplayCallback
 display stereo dlp angle =
   do
-    -- Frame-sequential encoding is usually the easiest to use.
-    let encoding = if stereo then FrameSequential else LeftOnly
     -- Determine whether to draw the view for the left of right eye.
-    leftFrame <- showEye' LeftDlp encoding dlp
+    leftFrame <- showEye' LeftDlp dlp
     angle' <- get angle
     -- Compute how to shift the view, depending on for which eye to draw.
     let offset = if leftFrame then 0.05 else -0.05 :: GLfloat
@@ -79,7 +77,8 @@ display stereo dlp angle =
       color $ Color3 1 0.65 (0.5 :: GLfloat)
       cubeFrame 0.25
     -- After all of the rendering actions, draw the colored DLP reference line just before swapping framebuffers.
-    drawDlp encoding dlp
+    when stereo
+      $ drawDlp dlp
     swapBuffers
 
 
