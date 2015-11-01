@@ -61,7 +61,7 @@ display stereo dlp angle =
     leftFrame <- showEye' LeftDlp encoding dlp
     angle' <- get angle
     -- Compute how to shift the view, depending on for which eye to draw.
-    let offset = if leftFrame then -0.05 else 0.05 :: GLfloat
+    let offset = if leftFrame then 0.05 else -0.05 :: GLfloat
     clear [ColorBuffer, DepthBuffer]
     loadIdentity
     preservingMatrix $ do
