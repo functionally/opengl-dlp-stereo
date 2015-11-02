@@ -1,5 +1,5 @@
 name:                opengl-dlp-stereo
-version:             0.1.3.1
+version:             0.1.3.2
 synopsis:            Library and example for using DLP stereo in OpenGL
 description:         This package contains functions for rendering 3D stereo using DLP 3-D Ready Sync projectors and active-shutter stereo glasses.  It also includes a sample application (see \<<https://youtu.be/l3rZbMB2XjM>\>) and notes regarding hardware setup for DLP.  In particular, note that this technique does not require a graphics card that supports @GL_STEREO@.
 
@@ -14,7 +14,7 @@ cabal-version:       >=1.10
 stability:           Stable
 homepage:            https://bitbucket.org/bwbush/opengl-dlp-stereo
 bug-reports:         https://bwbush.atlassian.net/projects/HOGLDLP/issues/
-package-url:         https://bitbucket.org/bwbush/opengl-dlp-stereo/downloads/opengl-dlp-stereo-0.1.3.1.tar.gz
+package-url:         https://bitbucket.org/bwbush/opengl-dlp-stereo/downloads/opengl-dlp-stereo-0.1.3.2.tar.gz
 
 extra-source-files:  ReadMe.md
 

@@ -104,10 +104,12 @@ initDlp encoding = newIORef $ DlpState encoding 0
 showEye :: DlpEye      -- ^ The eye in question.
         -> DlpState    -- ^ The current DLP state.
         -> Bool        -- ^ Whether the view of the specified eye should be shown for the current frame.
-showEye LeftDlp  (DlpState FrameSequential frame) = frame `mod` 2 == 0
-showEye RightDlp (DlpState FrameSequential frame) = frame `mod` 2 /= 0
-showEye RightDlp (DlpState LeftOnly        _    ) = False
-showEye LeftDlp  (DlpState RightOnly       _    ) = False
+showEye LeftDlp  (DlpState FrameSequential  frame) = frame `mod` 2 == 0
+showEye RightDlp (DlpState FrameSequential  frame) = frame `mod` 2 /= 0
+showEye LeftDlp  (DlpState FrameAlternating frame) = frame `mod` 2 == 0
+showEye RightDlp (DlpState FrameAlternating frame) = frame `mod` 2 /= 0
+showEye RightDlp (DlpState LeftOnly         _    ) = False
+showEye LeftDlp  (DlpState RightOnly        _    ) = False
 showEye _        _                                = True
 
 
