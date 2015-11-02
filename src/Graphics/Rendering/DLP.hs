@@ -75,11 +75,12 @@ import qualified Data.Vector.Storable as V (fromList, unsafeWith)
 
 -- | The type of DLP encoding.  See the specification \<<http://lists.gnu.org/archive/html/bino-list/2013-03/pdfz6rW7jUrgI.pdf>\> for further details.
 data DlpEncoding =
-    SideBySide      -- ^ Side-by-side encoding, where the left image is stored to the left of the right image in the framebuffer.
-  | FrameSequential -- ^ Frame-sequential encoding, where left and right images alternate, each filling the whole framebuffer.
-  | TopAndBottom    -- ^ Top-and-bottom encoding, where the top image is stored above the bottom image in the framebuffer.
-  | LeftOnly        -- ^ Monoscopic with only the left eye's view.
-  | RightOnly       -- ^ Monoscopic with only the right eye's view.
+    SideBySide       -- ^ Side-by-side encoding, where the left image is stored to the left of the right image in the framebuffer.
+  | FrameSequential  -- ^ Frame-sequential encoding, where left and right images alternate, each filling the whole framebuffer.
+  | TopAndBottom     -- ^ Top-and-bottom encoding, where the top image is stored above the bottom image in the framebuffer.
+  | LeftOnly         -- ^ Monoscopic with only the left eye's view.
+  | RightOnly        -- ^ Monoscopic with only the right eye's view.
+  | FrameAlternating -- ^ Alternating frames and color bars (/experimental/).
   deriving (Eq, Read, Show)
 
 
@@ -136,11 +137,12 @@ yellow  = red   .|. green
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
 dlpColor :: DlpState -> Word32
-dlpColor (DlpState SideBySide      frame) = if frame `mod` 2 == 0 then red   else cyan
-dlpColor (DlpState FrameSequential frame) = if frame `mod` 4 <  2 then green else magenta
-dlpColor (DlpState TopAndBottom    frame) = if frame `mod` 2 == 0 then blue  else yellow
-dlpColor (DlpState LeftOnly        _    ) = undefined -- Safe because drawDlp never calls the function for this DLP mode.
-dlpColor (DlpState RightOnly       _    ) = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
+dlpColor (DlpState SideBySide       frame) = if frame `mod` 2 == 0 then red   else cyan
+dlpColor (DlpState FrameSequential  frame) = if frame `mod` 4 <  2 then green else magenta
+dlpColor (DlpState TopAndBottom     frame) = if frame `mod` 2 == 0 then blue  else yellow
+dlpColor (DlpState LeftOnly         _    ) = undefined -- Safe because drawDlp never calls the function for this DLP mode.
+dlpColor (DlpState RightOnly        _    ) = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
+dlpColor (DlpState FrameAlternating frame) = if frame `mod` 2 == 0 then green else magenta
 
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
