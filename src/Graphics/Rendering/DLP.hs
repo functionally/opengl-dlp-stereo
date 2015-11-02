@@ -110,7 +110,7 @@ showEye LeftDlp  (DlpState FrameAlternating frame) = frame `mod` 2 == 0
 showEye RightDlp (DlpState FrameAlternating frame) = frame `mod` 2 /= 0
 showEye RightDlp (DlpState LeftOnly         _    ) = False
 showEye LeftDlp  (DlpState RightOnly        _    ) = False
-showEye _        _                                = True
+showEye _        _                                 = True
 
 
 -- | Query whether to show the view from the specified eye for the current frame.  Client code should call this function to determine which views to draw into the framebuffer.
