@@ -17,10 +17,12 @@ module Main (
 
 
 import Control.Monad (when)
+import Data.Default (def)
 import Data.IORef (IORef, newIORef)
-import Graphics.Rendering.DLP (DlpEncoding(..), DlpEye(..), DlpState, drawDlp, initDlp, showEye')
-import Graphics.Rendering.OpenGL.GL (ClearBuffer(..), Color3(..), ComparisonFunction(Less), PrimitiveMode(..), Vector3(..), Vertex3(..), GLfloat, ($=), ($~!), clear, color, get, loadIdentity, preservingMatrix, renderPrimitive, rotate, translate, vertex)
-import Graphics.UI.GLUT (DisplayCallback, DisplayMode(..), IdleCallback, createWindow, depthFunc, displayCallback, fullScreen, getArgsAndInitialize, idleCallback, initialDisplayMode, mainLoop, postRedisplay, swapBuffers)
+import Graphics.Rendering.DLP (DlpEncoding(..), DlpEye(..))
+import Graphics.Rendering.DLP.Callbacks (DlpDisplay(..), DlpDisplayCallback, dlpDisplayCallback)
+import Graphics.Rendering.OpenGL.GL (Color3(..), ComparisonFunction(Less), PrimitiveMode(..), Vector3(..), Vertex3(..), GLfloat, ($=!), ($~!), color, get, loadIdentity, preservingMatrix, renderPrimitive, rotate, translate, vertex)
+import Graphics.UI.GLUT (DisplayMode(..), IdleCallback, createWindow, depthFunc, fullScreen, getArgsAndInitialize, idleCallback, initialDisplayMode, mainLoop, postRedisplay)
 
 
 -- | The main action.
@@ -30,15 +32,19 @@ main =
     putStrLn "DLP Stereo OpenGL Example:"
     putStrLn "    Use the --fullscreen flag to run in full screen mode."
     putStrLn "    Use the --mono flag to run in monoscopic mode."
+    putStrLn "    Use the --cardboard flag to run in side-by-side (Google Cardboard) mode."
     (_, arguments) <- getArgsAndInitialize
-    initialDisplayMode $= [WithDepthBuffer, DoubleBuffered]
+    initialDisplayMode $=! [WithDepthBuffer, DoubleBuffered]
     _ <- createWindow "DLP Stereo OpenGL Example"
-    depthFunc $= Just Less 
+    depthFunc $=! Just Less 
     when ("--fullscreen" `elem` arguments) fullScreen
-    dlp <- initDlp FrameSequential
     angle <- newIORef 0
-    displayCallback $= display ("--mono" `notElem` arguments) dlp angle
-    idleCallback $= Just (idle angle)
+    let encoding
+          | "--mono"      `elem` arguments = LeftOnly
+          | "--cardboard" `elem` arguments = SideBySide
+          | otherwise                      = FrameSequential
+    dlpDisplayCallback $=! def {dlpEncoding = encoding, doDisplay = display angle}
+    idleCallback $=! Just (idle angle)
     mainLoop
 
 
@@ -47,20 +53,17 @@ idle :: IORef GLfloat -> IdleCallback
 idle angle =
   do
     angle $~! (+ 0.1)
-    -- The idle callback must force redisplay for frame-sequential encoding.
     postRedisplay Nothing
 
 
 -- | Draw rotating cubes.
-display :: Bool -> IORef DlpState -> IORef GLfloat -> DisplayCallback
-display stereo dlp angle =
+display :: IORef GLfloat -> DlpDisplayCallback
+display angle eye =
   do
-    -- Determine whether to draw the view for the left of right eye.
-    leftFrame <- showEye' LeftDlp dlp
     angle' <- get angle
-    -- Compute how to shift the view, depending on for which eye to draw.
-    let offset = if leftFrame then 0.05 else -0.05 :: GLfloat
-    clear [ColorBuffer, DepthBuffer]
+    let offset = case eye of
+                   LeftDlp  ->  0.05 
+                   RightDlp -> -0.05 :: GLfloat
     loadIdentity
     preservingMatrix $ do
       translate $ Vector3 offset 0 0.5
@@ -76,10 +79,6 @@ display stereo dlp angle =
       cube 0.25
       color $ Color3 1 0.65 (0.5 :: GLfloat)
       cubeFrame 0.25
-    -- After all of the rendering actions, draw the colored DLP reference line just before swapping framebuffers.
-    when stereo
-      $ drawDlp dlp
-    swapBuffers
 
 
 -- | Make a cube.  *Source:* \<<https://wiki.haskell.org/OpenGLTutorial2>\>.

@@ -60,6 +60,8 @@ module Graphics.Rendering.DLP (
 , DlpEye(..)
 , showEye
 , showEye'
+, whichView
+, whichView'
 ) where
 
 
@@ -80,7 +82,6 @@ data DlpEncoding =
   | TopAndBottom     -- ^ Top-and-bottom encoding, where the top image is stored above the bottom image in the framebuffer.
   | LeftOnly         -- ^ Monoscopic with only the left eye's view.
   | RightOnly        -- ^ Monoscopic with only the right eye's view.
-  | FrameAlternating -- ^ Alternating frames and color bars (/experimental/).
   deriving (Eq, Read, Show)
 
 
@@ -106,8 +107,6 @@ showEye :: DlpEye      -- ^ The eye in question.
         -> Bool        -- ^ Whether the view of the specified eye should be shown for the current frame.
 showEye LeftDlp  (DlpState FrameSequential  frame) = frame `mod` 2 == 0
 showEye RightDlp (DlpState FrameSequential  frame) = frame `mod` 2 /= 0
-showEye LeftDlp  (DlpState FrameAlternating frame) = frame `mod` 2 == 0
-showEye RightDlp (DlpState FrameAlternating frame) = frame `mod` 2 /= 0
 showEye RightDlp (DlpState LeftOnly         _    ) = False
 showEye LeftDlp  (DlpState RightOnly        _    ) = False
 showEye _        _                                 = True
@@ -118,6 +117,22 @@ showEye' :: DlpEye         -- ^ The eye in question.
          -> IORef DlpState -- ^ A reference to the current DLP state.
          -> IO Bool        -- ^ An action for determining whether the view of the specified eye should be shown for the current frame.
 showEye' eye = (showEye eye <$>) . get
+
+
+whichView :: DlpEye -> DlpState -> IO (Position, Size)
+whichView eye (DlpState SideBySide _) =
+  do
+    (Position x0 y0, Size w h) <- get viewport
+    return (Position (if eye == LeftDlp then x0 else x0 + w `div` 2) y0, Size (w - w `div` 2) h)
+whichView eye (DlpState TopAndBottom _) =
+  do
+    (Position x0 y0, Size w h) <- get viewport
+    return (Position x0 (if eye == LeftDlp then y0 else y0 + h `div` 2), Size w (h - h `div` 2))
+whichView _ _ = get viewport
+
+
+whichView' :: DlpEye -> IORef DlpState -> IO (Position, Size)
+whichView' eye = (whichView eye =<<) . get
 
 
 -- | Advance the DLP state one frame.
@@ -144,7 +159,6 @@ dlpColor (DlpState FrameSequential  frame) = if frame `mod` 4 <  2 then green el
 dlpColor (DlpState TopAndBottom     frame) = if frame `mod` 2 == 0 then blue  else yellow
 dlpColor (DlpState LeftOnly         _    ) = undefined -- Safe because drawDlp never calls the function for this DLP mode.
 dlpColor (DlpState RightOnly        _    ) = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
-dlpColor (DlpState FrameAlternating frame) = if frame `mod` 2 == 0 then green else magenta
 
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
