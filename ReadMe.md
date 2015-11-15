@@ -16,24 +16,19 @@ main :: IO ()
 main = do
   _ <- getArgsAndInitialize
   initialDisplayMode $= [WithDepthBuffer, DoubleBuffered]
-  _ <- createWindow "DLP Stereo OpenGL Example"
+  _ <- createWindow \"DLP Stereo OpenGL Example\"
   depthFunc $= Just Less 
-  dlp <- initDlp                                                         -- Initialize the DLP state.
-  displayCallback $= display dlp                                         -- The display callback needs the DLP state.
-  idleCallback $= Just (postRedisplay Nothing)                           -- The idle callback must force redisplay for frame-sequential encoding.
+  idleCallback $= Just (postRedisplay Nothing)
+  -- Use frame-sequential DLP encoding.
+  dlpDisplayCallback $= def {dlpEncoding = FrameSequential, doDisplay = display}
   mainLoop
 
-encoding :: DlpEncoding
-encoding = FrameSequential                                               -- Frame-sequential encoding is usually easiest to code.
-
-display :: IORef DlpState -> DisplayCallback
-display dlp = do
-  clear [ColorBuffer, DepthBuffer]
-  isLeftEye <- showEye' LeftDlp encoding dlp                             -- Determine whether to draw the view for the left or right eye.
-  translate $ Vector3 (if isLeftEye then -0.05 else 0.05 :: GLfloat) 0 0 -- Shift the view slightly, depending on for which eye to draw.
-  renderPrimitive . . .                                                  -- All of the rendering actions go here.
-  drawDlp encoding dlp                                                   -- Draw the colored DLP reference line just before swapping framebuffers.
-  swapBuffers
+display :: DlpDisplayCallback
+display eye = do
+  -- Shift the view slightly, depending on for which eye to draw.
+  translate $ Vector3 (if eye == LeftDlp then -0.05 else 0.05 :: GLfloat) 0 0 
+  -- All of the rendering actions go here.
+  renderPrimitive . . .
 ```
 
 

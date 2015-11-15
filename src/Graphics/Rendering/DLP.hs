@@ -8,7 +8,7 @@ Portability :  Portable
 
 Functions for using DLP stereo with 3-D Ready Sync projectors and OpenGL.  This uses the specification \<<http://lists.gnu.org/archive/html/bino-list/2013-03/pdfz6rW7jUrgI.pdf>\> and is based on the implementation for the stereo movie viewer Bino \<<http://git.savannah.gnu.org/cgit/bino.git/tree/src/video_output.cpp?id=bino-1.6.1#n1389>\>.  In particular, note that this technique does not require a graphics card that supports @GL_STEREO@.
 
-Here is a skeletal example illustrating the use of frame-sequential DLP:
+Below is a skeletal example illustrating the use of frame-sequential DLP.  See "Graphics.Rendering.DLP.Callbacks" for a simpler example that uses callbacks.
 
 @
 main :: IO ()
@@ -119,7 +119,10 @@ showEye' :: DlpEye         -- ^ The eye in question.
 showEye' eye = (showEye eye <$>) . get
 
 
-whichView :: DlpEye -> DlpState -> IO (Position, Size)
+-- | Compute the viewport for the specified eye, given a DLP state.
+whichView :: DlpEye              -- ^ The eye in question.
+          -> DlpState            -- ^ The current DLP state.
+          -> IO (Position, Size) -- ^ An action for computing the viewport for the eye.
 whichView eye (DlpState SideBySide _) =
   do
     (Position x0 y0, Size w h) <- get viewport
@@ -131,7 +134,10 @@ whichView eye (DlpState TopAndBottom _) =
 whichView _ _ = get viewport
 
 
-whichView' :: DlpEye -> IORef DlpState -> IO (Position, Size)
+-- | Compute the viewport for the specified eye, given a DLP state.
+whichView' :: DlpEye              -- ^ The eye in question.
+           -> IORef DlpState      -- ^ A reference to the current DLP state.
+           -> IO (Position, Size) -- ^ An actino for computing the viewport for the eye.
 whichView' eye = (whichView eye =<<) . get
 
 
