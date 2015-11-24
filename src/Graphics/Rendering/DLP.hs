@@ -82,6 +82,7 @@ data DlpEncoding =
   | TopAndBottom     -- ^ Top-and-bottom encoding, where the top image is stored above the bottom image in the framebuffer.
   | LeftOnly         -- ^ Monoscopic with only the left eye's view.
   | RightOnly        -- ^ Monoscopic with only the right eye's view.
+  | QuadBuffer       -- ^ Instead of DLP, use a quad buffer stereo.
   deriving (Eq, Read, Show)
 
 
@@ -109,6 +110,8 @@ showEye LeftDlp  (DlpState FrameSequential  frame) = frame `mod` 2 == 0
 showEye RightDlp (DlpState FrameSequential  frame) = frame `mod` 2 /= 0
 showEye RightDlp (DlpState LeftOnly         _    ) = False
 showEye LeftDlp  (DlpState RightOnly        _    ) = False
+showEye LeftDlp  (DlpState QuadBuffer       frame) = frame `mod` 2 == 0
+showEye RightDlp (DlpState QuadBuffer       frame) = frame `mod` 2 /= 0
 showEye _        _                                 = True
 
 
@@ -149,13 +152,14 @@ advanceDlp dlp =
 
 
 -- | Color constants.
-red, green, blue, cyan, magenta, yellow :: Word32
+red, green, blue, cyan, magenta, yellow, clear :: Word32
 red     = 0x00FF0000
 green   = 0x0000FF00
 blue    = 0x000000FF
 cyan    = green .|. blue
 magenta = red   .|. blue
 yellow  = red   .|. green
+clear   = 0xFF000000
 
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
@@ -165,6 +169,7 @@ dlpColor (DlpState FrameSequential  frame) = if frame `mod` 4 <  2 then green el
 dlpColor (DlpState TopAndBottom     frame) = if frame `mod` 2 == 0 then blue  else yellow
 dlpColor (DlpState LeftOnly         _    ) = undefined -- Safe because drawDlp never calls the function for this DLP mode.
 dlpColor (DlpState RightOnly        _    ) = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
+dlpColor (DlpState QuadBuffer       _    ) = clear
 
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.

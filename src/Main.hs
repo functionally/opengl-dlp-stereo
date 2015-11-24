@@ -33,16 +33,18 @@ main =
     putStrLn "    Use the --fullscreen flag to run in full screen mode."
     putStrLn "    Use the --mono flag to run in monoscopic mode."
     putStrLn "    Use the --cardboard flag to run in side-by-side (Google Cardboard) mode."
+    putStrLn "    Use the --quadbuffer flag to run in quad buffer stereo mode."
     (_, arguments) <- getArgsAndInitialize
-    initialDisplayMode $=! [WithDepthBuffer, DoubleBuffered]
+    initialDisplayMode $=! (if "--quadbuffer" `elem` arguments then (Stereoscopic :) else id) [WithDepthBuffer, DoubleBuffered]
     _ <- createWindow "DLP Stereo OpenGL Example"
     depthFunc $=! Just Less 
     when ("--fullscreen" `elem` arguments) fullScreen
     angle <- newIORef 0
     let encoding
-          | "--mono"      `elem` arguments = LeftOnly
-          | "--cardboard" `elem` arguments = SideBySide
-          | otherwise                      = FrameSequential
+          | "--quadbuffer" `elem` arguments = QuadBuffer
+          | "--mono"       `elem` arguments = LeftOnly
+          | "--cardboard"  `elem` arguments = SideBySide
+          | otherwise                       = FrameSequential
     dlpDisplayCallback $=! def {dlpEncoding = encoding, doDisplay = display angle}
     idleCallback $=! Just (idle angle)
     mainLoop

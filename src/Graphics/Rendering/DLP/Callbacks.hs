@@ -44,8 +44,9 @@ module Graphics.Rendering.DLP.Callbacks (
 
 
 import Data.Default (Default(..))
-import Graphics.Rendering.DLP (DlpEncoding(FrameSequential), DlpEye(..), drawDlp, initDlp, showEye, whichView)
-import Graphics.Rendering.OpenGL (ClearBuffer(..), SettableStateVar, ($=!), clear, get, makeSettableStateVar, viewport)
+import Data.IORef (IORef)
+import Graphics.Rendering.DLP (DlpEncoding(FrameSequential, QuadBuffer), DlpEye(..), DlpState, drawDlp, initDlp, showEye, whichView)
+import Graphics.Rendering.OpenGL (BufferMode(BackLeftBuffer, BackRightBuffer), ClearBuffer(..), SettableStateVar, ($=!), clear, drawBuffer, get, makeSettableStateVar, viewport)
 import Graphics.UI.GLUT (DisplayCallback, displayCallback, swapBuffers)
 
 
@@ -81,25 +82,55 @@ dlpDisplayCallback =
   makeSettableStateVar setDlpDisplayCallback
     where
       setDlpDisplayCallback :: DlpDisplay -> IO ()
-      setDlpDisplayCallback DlpDisplay{..} =
+      setDlpDisplayCallback dlpDisplay@DlpDisplay{..} =
         do
           dlpRef <- initDlp dlpEncoding
           displayCallback $=!
-            do
-              vpSaved <- get viewport
-              preDisplay
-              dlp <- get dlpRef
-              sequence_
-                [
-                  do
-                    vp <- whichView eye dlp
-                    viewport $=! vp
-                    doDisplay eye
-                    viewport $=! vpSaved
-                |
-                  eye <- [LeftDlp, RightDlp]
-                , showEye eye dlp
-                ]
-              postDisplay
-              drawDlp dlpRef
-              swapBuffers
+            case dlpEncoding of
+              QuadBuffer -> doQuad dlpRef dlpDisplay
+              _          -> doDlp  dlpRef dlpDisplay
+
+
+-- | Make a display callback for DLP.
+doDlp :: IORef DlpState  -- ^ A reference to the DLP state.
+      -> DlpDisplay      -- ^ The display information.
+      -> DisplayCallback -- ^ The display callback.
+doDlp dlpRef DlpDisplay{..} =
+  do
+    vpSaved <- get viewport
+    preDisplay
+    dlp <- get dlpRef
+    sequence_
+      [
+        do
+          vp <- whichView eye dlp
+          viewport $=! vp
+          doDisplay eye
+          viewport $=! vpSaved
+      |
+        eye <- [LeftDlp, RightDlp]
+      , showEye eye dlp
+      ]
+    postDisplay
+    drawDlp dlpRef
+    swapBuffers
+
+
+-- | Make a display callback for quad buffer stereo.
+doQuad :: IORef DlpState  -- ^ A reference to the DLP state.
+       -> DlpDisplay      -- ^ The display information.
+       -> DisplayCallback -- ^ The display callback.
+doQuad dlpRef DlpDisplay{..} =
+  do
+    sequence_
+      [
+        do
+          drawBuffer $=! buffer
+          preDisplay
+          doDisplay eye
+          postDisplay
+          drawDlp dlpRef
+      |
+        (eye, buffer) <- zip [LeftDlp, RightDlp] [BackLeftBuffer, BackRightBuffer]
+      ]
+    swapBuffers
