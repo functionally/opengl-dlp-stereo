@@ -65,7 +65,6 @@ module Graphics.Rendering.DLP (
 ) where
 
 
-import Control.Applicative ((<$>))
 import Control.Monad (unless, when)
 import Data.Bits ((.|.))
 import Data.IORef (IORef, newIORef)
