@@ -14,7 +14,7 @@ cabal-version:       >= 1.10
 stability:           Stable
 homepage:            https://bitbucket.org/bwbush/opengl-dlp-stereo
 bug-reports:         https://bwbush.atlassian.net/projects/HOGLDLP/issues/
-package-url:         https://bitbucket.org/bwbush/opengl-dlp-stereo/downloads/opengl-dlp-stereo-0.1.5.0.tar.gz
+package-url:         https://bitbucket.org/bwbush/opengl-dlp-stereo/downloads/opengl-dlp-stereo-0.1.5.2.tar.gz
 
 extra-source-files:  ReadMe.md
 
