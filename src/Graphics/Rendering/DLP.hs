@@ -76,12 +76,12 @@ import qualified Data.Vector.Storable as V (fromList, unsafeWith)
 
 -- | The type of DLP encoding.  See the specification \<<http://lists.gnu.org/archive/html/bino-list/2013-03/pdfz6rW7jUrgI.pdf>\> for further details.
 data DlpEncoding =
-    SideBySide       -- ^ Side-by-side encoding, where the left image is stored to the left of the right image in the framebuffer.
-  | FrameSequential  -- ^ Frame-sequential encoding, where left and right images alternate, each filling the whole framebuffer.
-  | TopAndBottom     -- ^ Top-and-bottom encoding, where the top image is stored above the bottom image in the framebuffer.
-  | LeftOnly         -- ^ Monoscopic with only the left eye's view.
-  | RightOnly        -- ^ Monoscopic with only the right eye's view.
-  | QuadBuffer       -- ^ Instead of DLP, use a quad buffer stereo.
+    SideBySide      -- ^ Side-by-side encoding, where the left image is stored to the left of the right image in the framebuffer.
+  | FrameSequential -- ^ Frame-sequential encoding, where left and right images alternate, each filling the whole framebuffer.
+  | TopAndBottom    -- ^ Top-and-bottom encoding, where the top image is stored above the bottom image in the framebuffer.
+  | LeftOnly        -- ^ Monoscopic with only the left eye's view.
+  | RightOnly       -- ^ Monoscopic with only the right eye's view.
+  | QuadBuffer      -- ^ Instead of DLP, use a quad buffer stereo.
   deriving (Eq, Read, Show)
 
 
@@ -102,9 +102,9 @@ initDlp encoding = newIORef $ DlpState encoding 0
 
 
 -- | Query whether to show the view from the specified eye for the current frame.  Client code should call this function to determine which views to draw into the framebuffer.
-showEye :: DlpEye      -- ^ The eye in question.
-        -> DlpState    -- ^ The current DLP state.
-        -> Bool        -- ^ Whether the view of the specified eye should be shown for the current frame.
+showEye :: DlpEye   -- ^ The eye in question.
+        -> DlpState -- ^ The current DLP state.
+        -> Bool     -- ^ Whether the view of the specified eye should be shown for the current frame.
 showEye LeftDlp  (DlpState FrameSequential  frame) = frame `mod` 2 == 0
 showEye RightDlp (DlpState FrameSequential  frame) = frame `mod` 2 /= 0
 showEye RightDlp (DlpState LeftOnly         _    ) = False
@@ -163,12 +163,12 @@ clear   = 0xFF000000
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
 dlpColor :: DlpState -> Word32
-dlpColor (DlpState SideBySide       frame) = if frame `mod` 2 == 0 then red   else cyan
-dlpColor (DlpState FrameSequential  frame) = if frame `mod` 4 <  2 then green else magenta
-dlpColor (DlpState TopAndBottom     frame) = if frame `mod` 2 == 0 then blue  else yellow
-dlpColor (DlpState LeftOnly         _    ) = undefined -- Safe because drawDlp never calls the function for this DLP mode.
-dlpColor (DlpState RightOnly        _    ) = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
-dlpColor (DlpState QuadBuffer       _    ) = clear
+dlpColor (DlpState SideBySide      frame) = if frame `mod` 2 == 0 then red   else cyan
+dlpColor (DlpState FrameSequential frame) = if frame `mod` 4 <  2 then green else magenta
+dlpColor (DlpState TopAndBottom    frame) = if frame `mod` 2 == 0 then blue  else yellow
+dlpColor (DlpState LeftOnly        _    ) = undefined -- Safe because drawDlp never calls the function for this DLP mode.
+dlpColor (DlpState RightOnly       _    ) = undefined -- Safe because drawDlp never acalls te function for this DLP mode.
+dlpColor (DlpState QuadBuffer      _    ) = clear
 
 
 -- | Determine the correct color of the reference line for a given DLP encoding and DLP state.
