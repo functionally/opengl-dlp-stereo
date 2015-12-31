@@ -120,7 +120,7 @@ doDlp dlpRef DlpDisplay{..} =
 doQuad :: IORef DlpState  -- ^ A reference to the DLP state.
        -> DlpDisplay      -- ^ The display information.
        -> DisplayCallback -- ^ The display callback.
-doQuad dlpRef DlpDisplay{..} =
+doQuad _ DlpDisplay{..} =
   do
     sequence_
       [
@@ -129,7 +129,6 @@ doQuad dlpRef DlpDisplay{..} =
           preDisplay
           doDisplay eye
           postDisplay
-          drawDlp dlpRef
       |
         (eye, buffer) <- zip [LeftDlp, RightDlp] [BackLeftBuffer, BackRightBuffer]
       ]

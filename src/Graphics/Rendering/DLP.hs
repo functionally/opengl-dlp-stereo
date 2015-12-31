@@ -182,7 +182,7 @@ drawDlp :: IORef DlpState -- ^ A reference to the current DLP state.
 drawDlp dlp =
   do
     DlpState encoding _ <- get dlp
-    unless (encoding `elem` [LeftOnly, RightOnly]) $ do
+    unless (encoding `elem` [LeftOnly, RightOnly, QuadBuffer]) $ do
       (Position x0 y0, Size w h) <- get viewport
       color <- dlpColor' dlp
       let
